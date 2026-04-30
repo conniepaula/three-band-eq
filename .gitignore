@@ -1,0 +1,8 @@
+# MacOS
+**/.DS_Store
+
+# Builds folder
+**/Builds
+
+# JUCE
+**/JuceLibraryCode
