@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="IN7xo3" name="Three Band EQ" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" companyName="Connie Paula Software Engineering"
+              version="0.0.0" pluginManufacturer="ConniePaulaSoftwareEngineering"
+              pluginManufacturerCode="Cpse" pluginCode="Ctbe">
   <MAINGROUP id="V18TSZ" name="Three Band EQ">
     <GROUP id="{EB5F1050-846B-2523-D701-8D82755F452D}" name="Source">
       <FILE id="FKKaQF" name="PluginProcessor.cpp" compile="1" resource="0"
