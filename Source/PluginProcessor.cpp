@@ -107,18 +107,19 @@ void ThreeBandEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     rightChannelChain.prepare(spec);
     
     auto chainSettings = getChainSettings(apvts);
-    // convert decibels to gain
-    // TODO: Change back to auto instead of float if it doesnt compile. Testing float because it says NumericValue in the definition.
-    float gainFact = juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels);
+
+    updatePeakFilter(chainSettings);
     
-    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
-                                                                                chainSettings.peakFreq,
-                                                                                chainSettings.peakQuality,
-                                                                                gainFact);
+    auto cutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq, sampleRate, 2 * (chainSettings.lowCutSlope + 1));
     
-    *leftChannelChain.get<ChainPositions::peak>().coefficients = *peakCoefficients;
-    *rightChannelChain.get<ChainPositions::peak>().coefficients = *peakCoefficients;
-}
+    auto& leftLowCut = leftChannelChain.get<ChainPositions::lowCut>();
+    auto& rightLowCut = rightChannelChain.get<ChainPositions::lowCut>();
+    
+    updateCutFilter(leftLowCut, cutCoefficients, chainSettings.lowCutSlope);
+    updateCutFilter(rightLowCut, cutCoefficients, chainSettings.lowCutSlope);
+    };
+
+
 
 void ThreeBandEQAudioProcessor::releaseResources()
 {
@@ -168,17 +169,16 @@ void ThreeBandEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
         buffer.clear (i, 0, buffer.getNumSamples());
     
     auto chainSettings = getChainSettings(apvts);
-    // convert decibels to gain
-    // TODO: Change back to auto instead of float if it doesnt compile. Testing float because it says NumericValue in the definition.
-    float gainFact = juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels);
+
+    updatePeakFilter(chainSettings);
     
-    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
-                                                                                chainSettings.peakFreq,
-                                                                                chainSettings.peakQuality,
-                                                                                gainFact);
+    auto cutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq, getSampleRate(), 2 * (chainSettings.lowCutSlope + 1));
     
-    *leftChannelChain.get<ChainPositions::peak>().coefficients = *peakCoefficients;
-    *rightChannelChain.get<ChainPositions::peak>().coefficients = *peakCoefficients;
+    auto& leftLowCut = leftChannelChain.get<ChainPositions::lowCut>();
+    auto& rightLowCut = rightChannelChain.get<ChainPositions::lowCut>();
+    
+    updateCutFilter(leftLowCut, cutCoefficients, chainSettings.lowCutSlope);
+    updateCutFilter(rightLowCut, cutCoefficients, chainSettings.lowCutSlope);
 
     juce::dsp::AudioBlock<float> block(buffer);
     
@@ -228,11 +228,33 @@ ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts)
     settings.peakFreq = apvts.getRawParameterValue("peakFreq")->load();
     settings.peakGainInDecibels = apvts.getRawParameterValue("peakGain")->load();
     settings.peakQuality = apvts.getRawParameterValue("peakQuality")->load();
-    settings.lowCutSlope = apvts.getRawParameterValue("lowCutSlope")->load();
-    settings.highCutSlope = apvts.getRawParameterValue("highCutSlope")->load();
+    settings.lowCutSlope = static_cast<Slope>(apvts.getRawParameterValue("lowCutSlope")->load());
+    settings.highCutSlope = static_cast<Slope>(apvts.getRawParameterValue("highCutSlope")->load());
     
     return settings;
 }
+
+void ThreeBandEQAudioProcessor::updateCoefficients(Coefficients &oldCoefficients, const Coefficients &replacementCoefficients)
+{
+    // must dereference ref-counted objs allocated on the heap to get underlying object
+    *oldCoefficients = *replacementCoefficients;
+}
+
+
+void ThreeBandEQAudioProcessor::updatePeakFilter(const ChainSettings& chainSettings)
+{
+    // convert decibels to gain
+    float gainFactor = juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels);
+    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
+                                                                        chainSettings.peakFreq,
+                                                                        chainSettings.peakQuality,
+                                                                        gainFactor);
+    
+    // ProcessorChain::get<>() selects processor by position number; we use enums for readability's sake
+    updateCoefficients(leftChannelChain.get<ChainPositions::peak>().coefficients, peakCoefficients);
+    updateCoefficients(rightChannelChain.get<ChainPositions::peak>().coefficients, peakCoefficients);
+}
+
 
 juce::AudioProcessorValueTreeState::ParameterLayout ThreeBandEQAudioProcessor::createParameterLayout()
 {
@@ -256,12 +278,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout ThreeBandEQAudioProcessor::c
                                                            juce::NormalisableRange<float>(20.0f, 20000.0f, 1.0f,  0.25f),
                                                            750.0f));
     
-    
+    // TODO: Improve skew factor
     layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID {"peakGain", version},
                                                            "Peak Gain",
                                                            juce::NormalisableRange<float>(-24.0f, 24.0f, 0.5f,  0.25f),
                                                            0.0f));
-    
+    // TODO: Improve skew factor
     layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID {"peakQuality", version},
                                                            "Peak Quality",
                                                            juce::NormalisableRange<float>(0.1f, 10.0f, 0.05f,  0.25f),
