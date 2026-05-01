@@ -107,16 +107,31 @@ void ThreeBandEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     rightChannelChain.prepare(spec);
     
     auto chainSettings = getChainSettings(apvts);
+    
+    // ----- Updating Coefficients -----
+    // Peak
 
     updatePeakFilter(chainSettings);
     
-    auto cutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq, sampleRate, 2 * (chainSettings.lowCutSlope + 1));
+    // Low Cut
     
-    auto& leftLowCut = leftChannelChain.get<ChainPositions::lowCut>();
-    auto& rightLowCut = rightChannelChain.get<ChainPositions::lowCut>();
+    auto lowCutFilterCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq, sampleRate, 2 * (chainSettings.lowCutSlope + 1));
     
-    updateCutFilter(leftLowCut, cutCoefficients, chainSettings.lowCutSlope);
-    updateCutFilter(rightLowCut, cutCoefficients, chainSettings.lowCutSlope);
+    auto& leftLowCutFilter = leftChannelChain.get<ChainPositions::lowCut>();
+    auto& rightLowCutFilter = rightChannelChain.get<ChainPositions::lowCut>();
+    
+    updateCutFilter(leftLowCutFilter, lowCutFilterCoefficients, chainSettings.lowCutSlope);
+    updateCutFilter(rightLowCutFilter, lowCutFilterCoefficients, chainSettings.lowCutSlope);
+    
+    // High Cut
+    
+    auto highCutFilterCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(chainSettings.highCutFreq, sampleRate, 2 * (chainSettings.highCutSlope + 1));
+    
+    auto& leftHighCutFilter = leftChannelChain.get<ChainPositions::highCut>();
+    auto& rightHighCutFilter = rightChannelChain.get<ChainPositions::highCut>();
+    
+    updateCutFilter(leftHighCutFilter, highCutFilterCoefficients, chainSettings.highCutSlope);
+    updateCutFilter(rightHighCutFilter, highCutFilterCoefficients, chainSettings.highCutSlope);
     };
 
 
@@ -169,16 +184,33 @@ void ThreeBandEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
         buffer.clear (i, 0, buffer.getNumSamples());
     
     auto chainSettings = getChainSettings(apvts);
+    // ----- Updating Coeficients -----
+
+    // Peak
 
     updatePeakFilter(chainSettings);
     
-    auto cutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq, getSampleRate(), 2 * (chainSettings.lowCutSlope + 1));
+    // Low Cut
     
-    auto& leftLowCut = leftChannelChain.get<ChainPositions::lowCut>();
-    auto& rightLowCut = rightChannelChain.get<ChainPositions::lowCut>();
+    auto lowCutFilterCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq, getSampleRate(), 2 * (chainSettings.lowCutSlope + 1));
     
-    updateCutFilter(leftLowCut, cutCoefficients, chainSettings.lowCutSlope);
-    updateCutFilter(rightLowCut, cutCoefficients, chainSettings.lowCutSlope);
+    auto& leftLowCutFilter = leftChannelChain.get<ChainPositions::lowCut>();
+    auto& rightLowCutFilter = rightChannelChain.get<ChainPositions::lowCut>();
+    
+    updateCutFilter(leftLowCutFilter, lowCutFilterCoefficients, chainSettings.lowCutSlope);
+    updateCutFilter(rightLowCutFilter, lowCutFilterCoefficients, chainSettings.lowCutSlope);
+    
+    // High Cut
+    
+    auto highCutFilterCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(chainSettings.highCutFreq, getSampleRate(), 2 * (chainSettings.highCutSlope + 1));
+    
+    auto& leftHighCutFilter = leftChannelChain.get<ChainPositions::highCut>();
+    auto& rightHighCutFilter = rightChannelChain.get<ChainPositions::highCut>();
+    
+    updateCutFilter(leftHighCutFilter, highCutFilterCoefficients, chainSettings.highCutSlope);
+    updateCutFilter(rightHighCutFilter, highCutFilterCoefficients, chainSettings.highCutSlope);
+    
+    // -----
 
     juce::dsp::AudioBlock<float> block(buffer);
     
@@ -228,7 +260,7 @@ ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts)
     settings.peakFreq = apvts.getRawParameterValue("peakFreq")->load();
     settings.peakGainInDecibels = apvts.getRawParameterValue("peakGain")->load();
     settings.peakQuality = apvts.getRawParameterValue("peakQuality")->load();
-    settings.lowCutSlope = static_cast<Slope>(apvts.getRawParameterValue("lowCutSlope")->load());
+    settings.highCutSlope = static_cast<Slope>(apvts.getRawParameterValue("lowCutSlope")->load());
     settings.highCutSlope = static_cast<Slope>(apvts.getRawParameterValue("highCutSlope")->load());
     
     return settings;
