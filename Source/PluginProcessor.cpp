@@ -215,7 +215,7 @@ void ThreeBandEQAudioProcessor::setStateInformation (const void* data, int sizeI
     }
 }
 
-ChainSettings getChainSettings(std::vector<param::RAP*> params)
+ChainSettings getChainSettings(std::vector<param::RAP*>& params)
 {
     ChainSettings settings;
     
@@ -249,9 +249,19 @@ void updateCoefficients(Coefficients &oldCoefficients, const Coefficients &repla
     *oldCoefficients = *replacementCoefficients;
 }
 
+auto makeLowCutFilter(const ChainSettings& chainSettings, double sampleRate)
+{
+    return juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq, sampleRate, 2 * (chainSettings.lowCutSlope + 1));
+}
+
+auto makeHighCutFilter(const ChainSettings& chainSettings, double sampleRate)
+{
+    return juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(chainSettings.highCutFreq, sampleRate, 2 * (chainSettings.highCutSlope + 1));
+}
+
 void ThreeBandEQAudioProcessor::updateLowCutFilters(const ChainSettings &chainSettings)
 {
-    auto lowCutFilterCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq, getSampleRate(), 2 * (chainSettings.lowCutSlope + 1));
+    auto lowCutFilterCoefficients = makeLowCutFilter(chainSettings, getSampleRate());
     
     auto& leftLowCutFilter = leftChannelChain.get<ChainPositions::lowCut>();
     auto& rightLowCutFilter = rightChannelChain.get<ChainPositions::lowCut>();
@@ -262,7 +272,7 @@ void ThreeBandEQAudioProcessor::updateLowCutFilters(const ChainSettings &chainSe
 
 void ThreeBandEQAudioProcessor::updateHighCutFilters(const ChainSettings &chainSettings)
 {
-    auto highCutFilterCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(chainSettings.highCutFreq, getSampleRate(), 2 * (chainSettings.highCutSlope + 1));
+    auto highCutFilterCoefficients = makeHighCutFilter(chainSettings, getSampleRate());
     
     auto& leftHighCutFilter = leftChannelChain.get<ChainPositions::highCut>();
     auto& rightHighCutFilter = rightChannelChain.get<ChainPositions::highCut>();
