@@ -27,11 +27,24 @@ sliders{
     for (auto& attachedSlider : sliders)
         addAndMakeVisible(attachedSlider.slider);
         
+    const auto& params = audioProcessor.getParameters();
+    for (auto param : params)
+    {
+        param->addListener(this);
+    }
+    
+    startTimerHz(60);
+    
     setSize (600, 400);
 }
 
 ThreeBandEQAudioProcessorEditor::~ThreeBandEQAudioProcessorEditor()
 {
+    const auto& params = audioProcessor.getParameters();
+    for (auto param : params)
+    {
+        param->removeListener(this);
+    }
 }
 
 //==============================================================================
@@ -62,25 +75,25 @@ void ThreeBandEQAudioProcessorEditor::paint (juce::Graphics& g)
         double mag = 1.0f;
         auto freq = mapToLog10(double (i) / double (w), 20.0, 20000.0);
         
-        if (monoChain.isBypassed<ChainPositions::peak>())
+        if (!monoChain.isBypassed<ChainPositions::peak>())
             mag *= peak.coefficients->getMagnitudeForFrequency(freq, sampleRate);
         
-        if (lowCut.isBypassed<CutFilterStage::firstStage>())
+        if (!lowCut.isBypassed<CutFilterStage::firstStage>())
             mag *= lowCut.get<CutFilterStage::firstStage>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
-        if (lowCut.isBypassed<CutFilterStage::secondStage>())
+        if (!lowCut.isBypassed<CutFilterStage::secondStage>())
             mag *= lowCut.get<CutFilterStage::secondStage>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
-        if (lowCut.isBypassed<CutFilterStage::thirdStage>())
+        if (!lowCut.isBypassed<CutFilterStage::thirdStage>())
             mag *= lowCut.get<CutFilterStage::thirdStage>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
-        if (lowCut.isBypassed<CutFilterStage::fourthStage>())
+        if (!lowCut.isBypassed<CutFilterStage::fourthStage>())
             mag *= lowCut.get<CutFilterStage::fourthStage>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
         
-        if (highCut.isBypassed<CutFilterStage::firstStage>())
+        if (!highCut.isBypassed<CutFilterStage::firstStage>())
             mag *= highCut.get<CutFilterStage::firstStage>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
-        if (highCut.isBypassed<CutFilterStage::secondStage>())
+        if (!highCut.isBypassed<CutFilterStage::secondStage>())
             mag *= highCut.get<CutFilterStage::secondStage>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
-        if (highCut.isBypassed<CutFilterStage::thirdStage>())
+        if (!highCut.isBypassed<CutFilterStage::thirdStage>())
             mag *= highCut.get<CutFilterStage::thirdStage>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
-        if (highCut.isBypassed<CutFilterStage::fourthStage>())
+        if (!highCut.isBypassed<CutFilterStage::fourthStage>())
             mag *= highCut.get<CutFilterStage::fourthStage>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
         
         magnitudes[i] = Decibels::gainToDecibels(mag);
@@ -143,7 +156,13 @@ void ThreeBandEQAudioProcessorEditor::timerCallback()
 {
     if (parametersChanged.compareAndSetBool(false, true))
     {
-//        if parameters changed, update monochain
+        DBG("params changed");
+        
+        //        if parameters changed, update monochain
+        auto chainSettings = getChainSettings(audioProcessor.params);
+        auto peakCoefficients = makePeakFilter(chainSettings, audioProcessor.getSampleRate());
+        updateCoefficients(monoChain.get<ChainPositions::peak>().coefficients, peakCoefficients);
 //        signal a repaint
+        repaint();
     }
 }
