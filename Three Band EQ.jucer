@@ -13,6 +13,7 @@
       <FILE id="jhPy8m" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="NQxKgq" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+      <FILE id="clbuBe" name="Parameters.h" compile="0" resource="0" file="Source/Parameters.h"/>
     </GROUP>
   </MAINGROUP>
   <MODULES>

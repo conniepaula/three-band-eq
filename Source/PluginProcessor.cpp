@@ -8,6 +8,7 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "Parameters.h"
 
 //==============================================================================
 ThreeBandEQAudioProcessor::ThreeBandEQAudioProcessor()
@@ -19,9 +20,16 @@ ThreeBandEQAudioProcessor::ThreeBandEQAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ),
+apvts (*this, nullptr, "Parameters", param::createParameterLayout()),
+params()
 #endif
 {
+    for(auto i = 0; i < param::numParams; ++i)
+    {
+        auto pID = static_cast<param::PID>(i);
+        params.push_back(apvts.getParameter(param::pidToID(pID)));
+    }
 }
 
 ThreeBandEQAudioProcessor::~ThreeBandEQAudioProcessor()
@@ -207,17 +215,30 @@ void ThreeBandEQAudioProcessor::setStateInformation (const void* data, int sizeI
     }
 }
 
-ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts)
+ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts, std::vector<param::RAP*> params)
 {
     ChainSettings settings;
     
-    settings.lowCutFreq = apvts.getRawParameterValue("lowCutFreq")->load();
-    settings.highCutFreq = apvts.getRawParameterValue("highCutFreq")->load();
-    settings.peakFreq = apvts.getRawParameterValue("peakFreq")->load();
-    settings.peakGainInDecibels = apvts.getRawParameterValue("peakGain")->load();
-    settings.peakQuality = apvts.getRawParameterValue("peakQuality")->load();
-    settings.highCutSlope = static_cast<Slope>(apvts.getRawParameterValue("lowCutSlope")->load());
-    settings.highCutSlope = static_cast<Slope>(apvts.getRawParameterValue("highCutSlope")->load());
+    settings.lowCutFreq =
+        param::getParamValue(params, param::PID::lowCutFreq);
+
+    settings.highCutFreq =
+        param::getParamValue(params, param::PID::highCutFreq);
+
+    settings.peakFreq =
+        param::getParamValue(params, param::PID::peakFreq);
+
+    settings.peakGainInDecibels =
+        param::getParamValue(params, param::PID::peakGain);
+
+    settings.peakQuality =
+        param::getParamValue(params, param::PID::peakQuality);
+
+    settings.lowCutSlope =
+        static_cast<Slope>(param::getParamValue(params, param::PID::lowCutSlope));
+
+    settings.highCutSlope =
+        static_cast<Slope>(param::getParamValue(params, param::PID::highCutSlope));
     
     return settings;
 }
@@ -266,62 +287,11 @@ void ThreeBandEQAudioProcessor::updatePeakFilter(const ChainSettings& chainSetti
 
 void ThreeBandEQAudioProcessor::updateFilters()
 {
-    auto chainSettings = getChainSettings(apvts);
+    auto chainSettings = getChainSettings(apvts, params);
     
     updateLowCutFilters(chainSettings);
     updatePeakFilter(chainSettings);
     updateHighCutFilters(chainSettings);
-}
-
-
-juce::AudioProcessorValueTreeState::ParameterLayout ThreeBandEQAudioProcessor::createParameterLayout()
-{
-    juce::AudioProcessorValueTreeState::ParameterLayout layout;
-    
-    const int version = 1;
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID {"lowCutFreq", version},
-                                                           "Low Cut Frequency",
-                                                           juce::NormalisableRange<float>(20.0f, 20000.0f, 1.0f,  0.25f),
-                                                           20.0f));
-    
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID {"highCutFreq", version},
-                                                           "High Cut Frequency",
-                                                           juce::NormalisableRange<float>(20.0f, 20000.0f, 1.0f,  0.25f),
-                                                           20000.0f));
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID {"peakFreq", version},
-                                                           "Peak Frequency",
-                                                           juce::NormalisableRange<float>(20.0f, 20000.0f, 1.0f,  0.25f),
-                                                           750.0f));
-    
-    // TODO: Improve skew factor
-    layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID {"peakGain", version},
-                                                           "Peak Gain",
-                                                           juce::NormalisableRange<float>(-24.0f, 24.0f, 0.5f,  0.25f),
-                                                           0.0f));
-    // TODO: Improve skew factor
-    layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID {"peakQuality", version},
-                                                           "Peak Quality",
-                                                           juce::NormalisableRange<float>(0.1f, 10.0f, 0.05f,  0.25f),
-                                                           1.0f));
-    
-    juce::StringArray stringArray;
-    for (int i = 0; i < 4; ++i)
-    {
-        juce::String str;
-        str << (12 + i*12);
-        str << " dB/Oct";
-        stringArray.add(str);
-    }
-    
-    layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID {"lowCutSlope", version}, "Low Cut Slope", stringArray, 0));
-    
-    layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID {"highCutSlope", version}, "High Cut Slope", stringArray, 0));
-
-    
-    return layout;
 }
 
 //==============================================================================
