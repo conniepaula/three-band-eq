@@ -249,16 +249,6 @@ void updateCoefficients(Coefficients &oldCoefficients, const Coefficients &repla
     *oldCoefficients = *replacementCoefficients;
 }
 
-auto makeLowCutFilter(const ChainSettings& chainSettings, double sampleRate)
-{
-    return juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq, sampleRate, 2 * (chainSettings.lowCutSlope + 1));
-}
-
-auto makeHighCutFilter(const ChainSettings& chainSettings, double sampleRate)
-{
-    return juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(chainSettings.highCutFreq, sampleRate, 2 * (chainSettings.highCutSlope + 1));
-}
-
 void ThreeBandEQAudioProcessor::updateLowCutFilters(const ChainSettings &chainSettings)
 {
     auto lowCutFilterCoefficients = makeLowCutFilter(chainSettings, getSampleRate());

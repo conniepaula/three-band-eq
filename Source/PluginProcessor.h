@@ -92,8 +92,16 @@ void updateCutFilter(ChainType& cutFilterChain, const CoefficientType& cutCoeffi
     }
 }
 
-auto makeLowCutFilter(const ChainSettings& chainSettings, double sampleRate);
-auto makeHighCutFilter(const ChainSettings& chainSettings, double sampleRate);
+inline auto makeLowCutFilter(const ChainSettings& chainSettings, double sampleRate)
+{
+    return juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq, sampleRate, 2 * (chainSettings.lowCutSlope + 1));
+}
+
+inline auto makeHighCutFilter(const ChainSettings& chainSettings, double sampleRate)
+{
+    return juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(chainSettings.highCutFreq, sampleRate, 2 * (chainSettings.highCutSlope + 1));
+}
+
 
 //==============================================================================
 /**

@@ -156,13 +156,22 @@ void ThreeBandEQAudioProcessorEditor::timerCallback()
 {
     if (parametersChanged.compareAndSetBool(false, true))
     {
+        auto sampleRate = audioProcessor.getSampleRate();
         DBG("params changed");
+        
         
         //        if parameters changed, update monochain
         auto chainSettings = getChainSettings(audioProcessor.params);
-        auto peakCoefficients = makePeakFilter(chainSettings, audioProcessor.getSampleRate());
+        auto peakCoefficients = makePeakFilter(chainSettings, sampleRate);
         updateCoefficients(monoChain.get<ChainPositions::peak>().coefficients, peakCoefficients);
-//        signal a repaint
+        
+        auto lowCutCoefficients = makeLowCutFilter(chainSettings, sampleRate);
+        auto highCutCoefficients = makeHighCutFilter(chainSettings, sampleRate);
+        
+        updateCutFilter(monoChain.get<ChainPositions::lowCut>(), lowCutCoefficients, chainSettings.lowCutSlope);
+        updateCutFilter(monoChain.get<ChainPositions::highCut>(), highCutCoefficients, chainSettings.highCutSlope);
+
+        //        signal a repaint
         repaint();
     }
 }
