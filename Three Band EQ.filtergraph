@@ -62,12 +62,12 @@
     </LAYOUT>
   </FILTER>
   <FILTER uid="5" x="0.4925" y="0.5" useARA="0" uiLastX_Normal="275" uiLastY_Normal="492"
-          uiopen_Normal="0">
+          uiopen_Normal="1">
     <PLUGIN name="Three Band EQ" format="AudioUnit" category="Effect" manufacturer="ConniePaulaSoftwareEngineering"
             version="0.0.0" file="AudioUnit:Effects/aufx,Ctbe,Cpse" uniqueId="61717778"
-            isInstrument="0" fileTime="0" infoUpdateTime="19de0262c86" numInputs="2"
+            isInstrument="0" fileTime="0" infoUpdateTime="19df3627e6d" numInputs="2"
             numOutputs="2" isShell="0" hasARAExtension="0" uid="61717778"/>
-    <STATE>261.hAGaoMGcv.y0AHv.DTfAGfPBJHwDTTAWsEla0YVXiQWcxUlbTQVXzEFWkwVYsUlaz0hag0VYWMWchQWdvU1U1Ulbyk1atQEc4AWYT4VXsUlDCA2bk8DDDA..............GfBG+CRO55Bivb2lX+Cf...R.ml4......U.u0O.....eACeKA.....ejO289LztZxG4n5+O....Ru.CM.QTwDkLQ6vCQASUI4Fb0QWzNDgUOUGcvUGcRLDchUFD.HQX0YFdXUkazkFcrUFYHbAIoXiOFsDTUwYniVJppB6r59avFC.......DP..........XA...................vy</STATE>
+    <STATE>627.hAGaoMGcv.C1AHv.DTfAGfPBJrvDTTgEWvUag4VclE1XzUmbkIGUjEFcgwUYrUVak4Fcs3VXsU1UyUmXzkGbkckckI2bo8laTQWdvU1WP7fZ0MVYPwVcmklaSQWXzUFUtEVakIwPvMWYOAAQ..............vAnvw+f3Cwz3LL2sI1+.H..fDvoYN.....PEva8C....vWvv2R.....vG4ycuOei847QNp9+CJkKpzLzfCQDULQISzO.QTvTURtAWczE8CRX0S0QGb0QmDCQmXkAA.RDVclg2SQD.OPElbg0VYzUlbyA..Ab.TAIUPMAP.BjFY.DPCEfVZmg1P0QmQxUVb.XWXrUWY.DPBD.......HNMP..UPRETS.Df.oQF.A3PAnk1YnMTczMEauAWY.XWXrUWY.DPBD.............UPRETS.Df.oQF.AvPAr81cCUGcFIWYwAfcgwVckAP.IP.........O.A.TAIUPMAP.BjFY.DPCEv1a2MTczMEauAWY.XWXrUWY.DPBD.............UPRETS.Df.oQF.AnPAvUVXqYjbkEG.1EFa0UF.Aj.A.......bGBD.PEjTA0D.AHPZjAP.JT.bkE1ZGEVZtAfcgwVckAP.IP.............TAIUPMAP.BjFY.DPCE.WYgsVT0EFaoQWd.XWXrUWY.DPBD.....9+++9O.fUUtQWZzwVYjA.B.jA.l.vJ.fC..A.R.zD.eA.Y.jF.vBPs.bK.4B.u.3K.DCvw.3L.SCP0.ns.Z........HP..........fA..................HvH</STATE>
     <LAYOUT>
       <INPUTS>
         <BUS index="0" layout="L R"/>
@@ -81,7 +81,7 @@
           uiLastY_Normal="126" uiopen_Normal="0">
     <PLUGIN name="AUAudioFilePlayer" format="AudioUnit" category="Generator"
             manufacturer="Apple" version="1.6.0" file="AudioUnit:Generators/augn,afpl,appl"
-            uniqueId="6163676e" isInstrument="0" fileTime="0" infoUpdateTime="19de0262c86"
+            uniqueId="6163676e" isInstrument="0" fileTime="0" infoUpdateTime="19df3627e6d"
             numInputs="0" numOutputs="2" isShell="0" hasARAExtension="0"
             uid="6163676e"/>
     <STATE>627.hAGaoMGcv.C1AHv.DTfAGfPBJr.Gc3wGgvUag4VclE1XzUmbkIGUjEFcg8EDarVPUAkbkMWYzAUYxMWZyQWYtQ2TzEFcksTY4c0b0IFc4AWYWYWYxMWZu4FUzkGbk8EDOXVZrUVKxUlYkIWYtMVYyQkag0VYRDFbvwFPgxvzM3vCPDQFXYTZrUlSg0VYWIUYmk1atMmWIM2TkwVYiQWYjYTZrU1WPT3KUMWYxM2Ki8latkVYuzTcyk1XuzTcyk1XuzTYjkVXtv1aiEFaooWYj8RS0MWZi8hQREzPTEDSS8xQuQGHMUFHSg1auQWZtcFHSQWXxM2KG8FcfzTYfLEcgIGckQFH3AxTn81azklamAxTzElbyABJFIUPCQUPLMEHB81azwVYmkhK2ElcgJA0SPQEVbAFYngWRU1Yo8laD8VYywzauAmVRU1Yo8laDEFcg8EDPjzbSUFakMFckQlTkcVZu4lVRU1Yo8laNEVakgvSP.G...........JZYIvA....................fMtQAA...............................D...............................................7++++O..........7HERBv+++++InkSkcGHRU1Yo8laIHQXlAGaP.fDgU2YtEMHPXkQowVYfDCVU4FcoQGakQF.H.PF.XB.q.PR.DE.YAfW..G.0Afd.rG.8A.g.zH.UB.oAvR.tDvMAXT.QE.YA7V.vEv3APd.uG.7ATe.2G.+A7u.F........HP..........HB..................HvC</STATE>

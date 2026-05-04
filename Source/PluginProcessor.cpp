@@ -189,8 +189,8 @@ bool ThreeBandEQAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* ThreeBandEQAudioProcessor::createEditor()
 {
-//    return new ThreeBandEQAudioProcessorEditor (*this);
-    return new juce::GenericAudioProcessorEditor(*this);
+    return new ThreeBandEQAudioProcessorEditor (*this);
+//    return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
