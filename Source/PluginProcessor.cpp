@@ -215,7 +215,7 @@ void ThreeBandEQAudioProcessor::setStateInformation (const void* data, int sizeI
     }
 }
 
-ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts, std::vector<param::RAP*> params)
+ChainSettings getChainSettings(std::vector<param::RAP*> params)
 {
     ChainSettings settings;
     
@@ -243,7 +243,7 @@ ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts, std::v
     return settings;
 }
 
-void ThreeBandEQAudioProcessor::updateCoefficients(Coefficients &oldCoefficients, const Coefficients &replacementCoefficients)
+void updateCoefficients(Coefficients &oldCoefficients, const Coefficients &replacementCoefficients)
 {
     // must dereference ref-counted objs allocated on the heap to get underlying object
     *oldCoefficients = *replacementCoefficients;
@@ -271,14 +271,19 @@ void ThreeBandEQAudioProcessor::updateHighCutFilters(const ChainSettings &chainS
     updateCutFilter(rightHighCutFilter, highCutFilterCoefficients, chainSettings.highCutSlope);
 }
 
-void ThreeBandEQAudioProcessor::updatePeakFilter(const ChainSettings& chainSettings)
+Coefficients makePeakFilter(const ChainSettings& chainSettings, double sampleRate)
 {
     // convert decibels to gain
     float gainFactor = juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels);
-    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
-                                                                        chainSettings.peakFreq,
-                                                                        chainSettings.peakQuality,
-                                                                        gainFactor);
+    return juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
+                                                               chainSettings.peakFreq,
+                                                               chainSettings.peakQuality,
+                                                               gainFactor);
+}
+
+void ThreeBandEQAudioProcessor::updatePeakFilter(const ChainSettings& chainSettings)
+{
+    auto peakCoefficients = makePeakFilter(chainSettings, getSampleRate());
     
     // ProcessorChain::get<>() selects processor by position number; we use enums for readability's sake
     updateCoefficients(leftChannelChain.get<ChainPositions::peak>().coefficients, peakCoefficients);
@@ -287,7 +292,7 @@ void ThreeBandEQAudioProcessor::updatePeakFilter(const ChainSettings& chainSetti
 
 void ThreeBandEQAudioProcessor::updateFilters()
 {
-    auto chainSettings = getChainSettings(apvts, params);
+    auto chainSettings = getChainSettings(params);
     
     updateLowCutFilters(chainSettings);
     updatePeakFilter(chainSettings);
